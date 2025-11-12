@@ -1,11 +1,21 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import HTTPException
-from contextlib import asynccontextmanager
-from .database import create_db_and_tables, close_db_connection
-from .schemas import BaseResponse
-from .api import router as api_router  # <-- IMPORT THE ROUTER
-import logging
+try:
+    from fastapi import FastAPI, Request
+    from fastapi.responses import JSONResponse
+    from fastapi.exceptions import HTTPException
+except ModuleNotFoundError as e:
+    import sys
+    print(f"Module not found: {e.name}")
+    print("")
+    print("It looks like required Python packages are not installed.")
+    print("Recommended steps:")
+    print("  1) Create and activate a virtual environment:")
+    print("       python -m venv .venv")
+    print("       .\\.venv\\Scripts\\activate   (Windows cmd)")
+    print("       .\\.venv\\Scripts\\Activate.ps1   (PowerShell)")
+    print("  2) Install dependencies:")
+    print("       pip install -r requirements.txt")
+    print("")
+    sys.exit(1)
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
