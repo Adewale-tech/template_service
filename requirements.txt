@@ -4,3 +4,22 @@ sqlmodel>=0.0.8
 psycopg2-binary>=2.9.0  # For PostgreSQL
 alembic>=1.7.0          # For database migrations
 python-dotenv>=0.20.0   # For .env file support
+FastAPI Web Framework
+
+Database (PostgreSQL)
+
+sqlalchemy[asyncpg]==2.0.30
+psycopg2-binary==2.9.9
+
+Caching (Redis)
+
+redis[hiredis]==5.0.7
+
+Messaging (RabbitMQ)
+
+aio-pika==9.4.1
+
+Environment & Settings
+
+pydantic==2.7.3
+pydantic-settings==2.3.3
