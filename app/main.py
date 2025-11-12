@@ -1,28 +1,18 @@
-import logging
+from fastapi import FastAPI, Request, Depends
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import HTTPException
 from contextlib import asynccontextmanager
+from redis.asyncio.client import Redis
+from aio_pika.channel import Channel
 
-try:
-    from fastapi import FastAPI, Request
-    from fastapi.responses import JSONResponse
-    from fastapi.exceptions import HTTPException
-    
-    from app.database import create_db_and_tables, close_db_connection
-    from app.schemas import BaseResponse
-    from app.api import api_router
-except ModuleNotFoundError as e:
-    import sys
-    print(f"Module not found: {e.name}")
-    print("")
-    print("It looks like required Python packages are not installed.")
-    print("Recommended steps:")
-    print("  1) Create and activate a virtual environment:")
-    print("       python -m venv .venv")
-    print("       .\\.venv\\Scripts\\activate   (Windows cmd)")
-    print("       .\\.venv\\Scripts\\Activate.ps1   (PowerShell)")
-    print("  2) Install dependencies:")
-    print("       pip install -r requirements.txt")
-    print("")
-    sys.exit(1)
+# Import our new service instances
+from .services.cache import cache_service
+from .services.messaging import messaging_service
+
+from .database import create_db_and_tables, close_db_connection
+from .schemas import BaseResponse
+from .api import router as api_router
+import logging
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -38,19 +28,46 @@ async def lifespan(app: FastAPI):
         # On startup: Create database tables
         await create_db_and_tables()
         logger.info("Database tables created (if not exist).")
-        # TODO: Initialize Redis connection pool
-        # TODO: Initialize RabbitMQ connection
+        
+        # Initialize Redis and RabbitMQ connection pools
+        await cache_service.init_redis_pool()
+        await messaging_service.init_rabbitmq_connection()
+
+        # Store connections in app.state for dependencies
+        app.state.redis = await cache_service.get_connection()
+        app.state.rabbit_channel = await messaging_service.get_channel()
+
     except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
+        logger.error(f"Failed during startup: {e}")
     
     yield  # The application is now running
     
     # On shutdown:
     logger.info("Shutting down Template Service...")
+    if app.state.redis:
+        await app.state.redis.close()
+    if app.state.rabbit_channel:
+        await app.state.rabbit_channel.close()
+        
     await close_db_connection()
-    # TODO: Close Redis connection pool
-    # TODO: Close RabbitMQ connection
+    await cache_service.close_redis_pool()
+    await messaging_service.close_rabbitmq_connection()
     logger.info("Shutdown complete.")
+
+# --- Dependencies ---
+
+async def get_redis(request: Request) -> Redis:
+    """Dependency to get the Redis connection from app state."""
+    if not request.app.state.redis:
+        raise HTTPException(status_code=503, detail="Redis connection not available.")
+    return request.app.state.redis
+
+async def get_rabbit_channel(request: Request) -> Channel:
+    """Dependency to get the RabbitMQ channel from app state."""
+    if not request.app.state.rabbit_channel:
+        raise HTTPException(status_code=503, detail="RabbitMQ connection not available.")
+    return request.app.state.rabbit_channel
+
 
 # Initialize the FastAPI app with the lifespan event handler
 app = FastAPI(
@@ -61,8 +78,6 @@ app = FastAPI(
 )
 
 # --- Custom Exception Handler ---
-# This ensures that even when an HTTPException occurs (like a 404),
-# the response *still* follows your HNG BaseResponse format.
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
@@ -75,7 +90,12 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 # --- Include the API Routes ---
-app.include_router(api_router, prefix="/api/v1")  # <-- INCLUDE THE ROUTER
+# We add our new dependencies to be available for the router
+app.include_router(
+    api_router, 
+    prefix="/api/v1",
+    dependencies=[Depends(get_redis), Depends(get_rabbit_channel)]
+)
 
 @app.get("/health", response_model=BaseResponse, tags=["Monitoring"])
 async def health_check():
