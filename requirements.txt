@@ -10,15 +10,14 @@ python-dotenv>=0.20.0   # For .env file suppor
 sqlalchemy[asyncpg]==2.0.30
 psycopg2-binary==2.9.9
 
-Caching (Redis)
 
 redis[hiredis]==5.0.7
 
-Messaging (RabbitMQ)
+
 
 aio-pika==9.4.1
 
-Environment & Settings
+
 
 pydantic==2.7.3
 pydantic-settings==2.3.3
