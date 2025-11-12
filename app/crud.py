@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import desc
-from . import models, schemas
+from app import models, schemas  # <-- Use absolute import
 from typing import Optional
 
 async def get_template_by_name(
