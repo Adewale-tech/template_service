@@ -1,7 +1,14 @@
+import logging
+from contextlib import asynccontextmanager
+
 try:
     from fastapi import FastAPI, Request
     from fastapi.responses import JSONResponse
     from fastapi.exceptions import HTTPException
+    
+    from app.database import create_db_and_tables, close_db_connection
+    from app.schemas import BaseResponse
+    from app.api import api_router
 except ModuleNotFoundError as e:
     import sys
     print(f"Module not found: {e.name}")
