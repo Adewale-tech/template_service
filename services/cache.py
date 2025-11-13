@@ -1,5 +1,5 @@
 import redis.asyncio as aioredis
-from redis.asyncio.client import Redis
+from redis.asyncio import Redis
 from pydantic import ValidationError
 import os
 import json
