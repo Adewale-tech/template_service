@@ -3,6 +3,9 @@ from sqlalchemy.orm import sessionmaker
 from app.models import Base  # <-- Use absolute import
 import os
 from contextlib import asynccontextmanager
+from fastapi import HTTPException, Request
+from redis.asyncio import Redis
+from aio_pika.channel import Channel
 
 # Load the database URL from environment variables
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@db/template_db")
@@ -49,3 +52,15 @@ async def close_db_connection():
     Closes the database connection pool on shutdown.
     """
     await engine.dispose()
+
+async def get_redis(request: Request) -> Redis:
+    """Dependency to get the Redis connection from app state."""
+    if not request.app.state.redis:
+        raise HTTPException(status_code=503, detail="Redis connection not available.")
+    return request.app.state.redis
+
+async def get_rabbit_channel(request: Request) -> Channel:
+    """Dependency to get the RabbitMQ channel from app state."""
+    if not request.app.state.rabbit_channel:
+        raise HTTPException(status_code=503, detail="RabbitMQ connection not available.")
+    return request.app.state.rabbit_channel

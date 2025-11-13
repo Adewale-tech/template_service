@@ -6,8 +6,7 @@ from typing import List
 
 from . import crud, schemas
 from .database import get_session
-# Import our new dependencies and services
-from .main import get_redis, get_rabbit_channel
+from .dependencies import get_redis, get_rabbit_channel
 from .services.cache import cache_service
 from .services.messaging import messaging_service
 

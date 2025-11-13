@@ -1,12 +1,11 @@
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from contextlib import asynccontextmanager
-from redis.asyncio.client import Redis
-from aio_pika.channel import Channel
 
 from .database import create_db_and_tables, close_db_connection
 from .schemas import BaseResponse
+from .dependencies import get_redis, get_rabbit_channel
 from .api import router as api_router
 import logging
 
@@ -49,21 +48,6 @@ async def lifespan(app: FastAPI):
     await cache_service.close_redis_pool()
     await messaging_service.close_rabbitmq_connection()
     logger.info("Shutdown complete.")
-
-# --- Dependencies ---
-
-async def get_redis(request: Request) -> Redis:
-    """Dependency to get the Redis connection from app state."""
-    if not request.app.state.redis:
-        raise HTTPException(status_code=503, detail="Redis connection not available.")
-    return request.app.state.redis
-
-async def get_rabbit_channel(request: Request) -> Channel:
-    """Dependency to get the RabbitMQ channel from app state."""
-    if not request.app.state.rabbit_channel:
-        raise HTTPException(status_code=503, detail="RabbitMQ connection not available.")
-    return request.app.state.rabbit_channel
-
 
 # Initialize the FastAPI app with the lifespan event handler
 app = FastAPI(
