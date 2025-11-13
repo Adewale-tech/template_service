@@ -5,10 +5,6 @@ from contextlib import asynccontextmanager
 from redis.asyncio.client import Redis
 from aio_pika.channel import Channel
 
-# Import our new service instances
-from .services.cache import cache_service
-from .services.messaging import messaging_service
-
 from .database import create_db_and_tables, close_db_connection
 from .schemas import BaseResponse
 from .api import router as api_router
