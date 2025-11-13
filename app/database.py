@@ -1,38 +1,59 @@
+"""
+Database configuration and session management for the Template Service.
+
+This module handles:
+- AsyncSQL database engine creation
+- Async session factory setup
+- Database initialization on startup
+- Proper cleanup on shutdown
+"""
+
 import os
-from sqlmodel import create_engine, SQLModel, Session
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from app.models import Base
 
-# --- Database Configuration ---
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./test.db")
+# Database URL from environment variables
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@db/template_db")
 
-# The connect_args are specific to SQLite.
-# It's recommended to use check_same_thread=False only for single-threaded applications
-# or when the application is managing thread safety. FastAPI with SQLModel/SQLAlchemy
-# often requires this for SQLite.
-engine = create_engine(DATABASE_URL, echo=True, connect_args={"check_same_thread": False})
+# Create the async engine
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=True,  # Log SQL queries (development)
+    future=True
+)
 
-# --- Database Session Management ---
-def get_session():
+# Create async session factory
+AsyncSessionLocal = sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False,
+)
+
+async def get_session() -> AsyncSession:
     """
-    Dependency to get a database session.
+    Dependency to get an async database session.
+    Ensures the session is always closed.
     """
-    with Session(engine) as session:
-        yield session
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
 
 async def create_db_and_tables():
     """
-    Creates the database and all tables defined by SQLModel metadata.
+    Initializes the database and creates tables on startup.
     """
-    # The following import is here to ensure that the models are registered with SQLModel
-    # before the tables are created.
-    from app import models  # noqa
-    SQLModel.metadata.create_all(engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 async def close_db_connection():
     """
-    Closes the database connection engine.
-    (Note: For some engines, this is not strictly necessary but is good practice)
+    Closes the database connection pool on shutdown.
     """
-    # SQLAlchemy engines are designed to be long-lived and handle connection pooling.
-    # Explicitly disposing of the engine is not always required on app shutdown,
-    # but can be useful in certain deployment scenarios.
-    engine.dispose()
+    await engine.dispose()

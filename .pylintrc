@@ -1,0 +1,92 @@
+[MASTER]
+jobs=0
+limit-inference-results=100
+persistent=yes
+suggestion-mode=yes
+unsafe-load-any-extension=no
+extension-pkg-allow-list=
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    too-few-public-methods,
+    duplicate-code,
+    import-outside-toplevel,
+
+[REPORTS]
+evaluation=10.0 - ((float(fatal) + float(error) + float(warning)) / statement) * 10
+output-format=text
+reports=no
+score=yes
+
+[LOGGING]
+logging-format-style=new
+logging-modules=logging
+
+[VARIABLES]
+allow-global-unused-variables=yes
+callbacks=cb_,_cb
+dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
+ignored-argument-names=_.*|^ignored_|^unused_
+init-import=no
+
+[FORMAT]
+indent-after-paren=4
+indent-string='    '
+max-line-length=100
+max-module-lines=1000
+
+[BASIC]
+argument-naming-style=snake_case
+attr-naming-style=snake_case
+class-attribute-naming-style=any
+class-naming-style=PascalCase
+const-naming-style=UPPER_CASE
+function-naming-style=snake_case
+method-naming-style=snake_case
+module-naming-style=snake_case
+variable-naming-style=snake_case
+bad-names=foo,bar,baz,toto,tutu,tata
+bad-names-rgxs=
+consider-using-from-import=no
+
+[SIMILARITIES]
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+min-similarity-lines=4
+
+[MISCELLANEOUS]
+notes=FIXME,XXX,TODO
+notes-rgx=
+
+[SPELLING]
+max-spelling-suggestions=4
+spelling-dict=en_US
+spelling-ignore-comment-directives=fmt: skip,noqa:,noqa,pylint:,type:
+
+[DESIGN]
+max-args=5
+max-attributes=7
+max-bool-expr=5
+max-branches=12
+max-locals=15
+max-parents=7
+max-public-methods=20
+max-returns=6
+max-statements=50
+min-public-methods=2
+
+[CLASSES]
+defining-attr-methods=__init__,__new__,setUp,__post_init__
+exclude-protected=_asdict,_fields,_replace,_source,_make
+valid-classmethod-first-arg=cls
+valid-metaclass-first-arg=cls
+
+[IMPORTS]
+allow-wildcard-with-library=no
+analyse-fallback-blocks=no
+deprecated-modules=optparse,tkinter.tix
+
+[EXCEPTIONS]
+overgeneral-exceptions=BaseException,Exception
