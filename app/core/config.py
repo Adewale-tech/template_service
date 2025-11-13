@@ -18,7 +18,11 @@ class Settings(BaseSettings):
 
     # Server Settings
     HOST: str = Field(default="0.0.0.0", env="HOST")
-    PORT: int = Field(default=8001, env="PORT")
+    PORT: int = Field(default=8082, env="PORT")
+
+    # Service URLs
+    USER_SERVICE_URL: Optional[str] = Field(default=None, env="USER_SERVICE_URL")
+    TEMPLATE_SERVICE_URL: Optional[str] = Field(default=None, env="TEMPLATE_SERVICE_URL")
 
     # Database Settings
     DATABASE_URL: str = Field(
@@ -58,6 +62,7 @@ class Settings(BaseSettings):
 
     # Security
     API_KEY: Optional[str] = Field(default=None, env="API_KEY")
+    USER_SERVICE_API_KEY: Optional[str] = Field(default=None, env="USER_SERVICE_API_KEY")
     JWT_SECRET: Optional[str] = Field(default=None, env="JWT_SECRET")
 
     # Pagination
