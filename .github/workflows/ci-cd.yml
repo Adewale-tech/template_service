@@ -181,4 +181,4 @@ jobs:
       - name: Health Check
         run: |
           sleep 10
-          curl -f http://${{ secrets.DEPLOY_HOST }}/health || exit 1
+          curl -f http://${{ secrets.DEPLOY_HOST }}:8082/health || exit 1

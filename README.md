@@ -38,7 +38,7 @@ Once the services are running, you can test the `template-service` to ensure it'
 2.  **Run the following curl command** to hit the health check endpoint:
 
     ```bash
-    
+           curl http://localhost:8082/health
     ```
 
 3.  **You should see the following JSON response:**
