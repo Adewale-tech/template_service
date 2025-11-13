@@ -7,8 +7,8 @@ from typing import List
 from . import crud, schemas
 from .database import get_session
 from .dependencies import get_redis, get_rabbit_channel
-from .services.cache import cache_service
-from .services.messaging import messaging_service
+from ..services.cache import cache_service
+from ..services.messaging import messaging_service
 
 
 router = APIRouter()

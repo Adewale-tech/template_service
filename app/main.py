@@ -7,6 +7,8 @@ from .database import create_db_and_tables, close_db_connection
 from .schemas import BaseResponse
 from .dependencies import get_redis, get_rabbit_channel
 from .api import router as api_router
+from ..services.cache import cache_service
+from ..services.messaging import messaging_service
 import logging
 
 # Setup logging
