@@ -1,7 +1,6 @@
-"""
-GitHub Actions CI/CD Workflow for Template Service
-This workflow runs on push and pull request events.
-"""
+# GitHub Actions CI/CD Workflow for Template Service
+# This workflow runs on push and pull request events.
+
 name: CI/CD Pipeline
 
 on:
@@ -108,8 +107,7 @@ jobs:
           DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/template_test_db
           REDIS_URL: redis://localhost:6379/0
           RABBITMQ_URL: amqp://guest:guest@localhost:5672/
-        run: |
-          pytest tests/ -v --cov=app --cov-report=xml --cov-report=term
+        run: pytest tests/ -v --cov=app --cov-report=xml --cov-report=term
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
